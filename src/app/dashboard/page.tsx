@@ -5,7 +5,7 @@ import { Header } from "@/components/header"
 import axios from "axios";
 
 export const BACKEND_URL = 'http://localhost:8080'; 
-export const token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiJkMjg2YTk2Yy00ZjU2LTRmYmMtYWEyMS1kN2RhZGNlYWZjYTAiLCJpYXQiOjE3NTg5MDg4MDl9.kdVBsywp8hs8as23SvDJWDFV-7010iAXW8EAaYHYrUE`
+export const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiJkMjg2YTk2Yy00ZjU2LTRmYmMtYWEyMS1kN2RhZGNlYWZjYTAiLCJpYXQiOjE3NTg5MjUxMDZ9.J9jCE4Jp7dBt0s4qw7Ojo17C8-cygNiMInynRDMXn5w"
 
 export default function AIChat() {
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
@@ -44,8 +44,7 @@ export default function AIChat() {
       setLoading(true);
       const response = await axios.get(`${BACKEND_URL}/chats`, {
         headers: {
-          'Content-Type': 'application/json',
-          'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiJkMjg2YTk2Yy00ZjU2LTRmYmMtYWEyMS1kN2RhZGNlYWZjYTAiLCJpYXQiOjE3NTgxMzY4MjJ9.69WNiS6khu6T4MxEusi508JNhb6dsuNUw780FqxUaGg'
+          'token': token
         }
       });
 
@@ -118,7 +117,7 @@ export default function AIChat() {
       }, {
         headers: {
           'Content-Type': 'application/json',
-          'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiJkMjg2YTk2Yy00ZjU2LTRmYmMtYWEyMS1kN2RhZGNlYWZjYTAiLCJpYXQiOjE3NTgxMzY4MjJ9.69WNiS6khu6T4MxEusi508JNhb6dsuNUw780FqxUaGg'
+          'token': token
         }
       });
 
