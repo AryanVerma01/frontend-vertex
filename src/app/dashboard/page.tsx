@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect } from 'react';
 import { Send, Bot, User, Loader2 } from 'lucide-react';
-// import Header from './Header';
+import { Header } from "@/components/header"
 
 
 const BACKEND_URL = 'http://localhost:3000'; 
@@ -227,7 +227,7 @@ export default function AIChat() {
   if (loading) {
     return (
       <div className="flex flex-col h-screen">
-        {/* <Header /> */}
+        <Header />
         <div className="dark-card h-[600px] flex items-center justify-center m-6">
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-4" />
@@ -240,7 +240,7 @@ export default function AIChat() {
 
   return (
   <div className="flex flex-col h-screen">
-    {/* <Header /> */}
+    <Header />
     <div className="dark-card flex flex-col flex-1 m-6">
       {/* Chat Header */}
       <div className="p-6 border-b border-gray-800">
