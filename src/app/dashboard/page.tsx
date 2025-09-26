@@ -4,7 +4,8 @@ import { Send, Bot, User, Loader2 } from 'lucide-react';
 import { Header } from "@/components/header"
 import axios from "axios";
 
-const BACKEND_URL = 'http://localhost:8080'; 
+export const BACKEND_URL = 'http://localhost:8080'; 
+export const token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiJkMjg2YTk2Yy00ZjU2LTRmYmMtYWEyMS1kN2RhZGNlYWZjYTAiLCJpYXQiOjE3NTg5MDg4MDl9.kdVBsywp8hs8as23SvDJWDFV-7010iAXW8EAaYHYrUE`
 
 export default function AIChat() {
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
@@ -34,7 +35,6 @@ export default function AIChat() {
     fetchChatHistory();
   }, []);
 
-
   useEffect(() => {
     console.log('Messages state updated:', messages);
   }, [messages]);
@@ -42,22 +42,21 @@ export default function AIChat() {
   const fetchChatHistory = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${BACKEND_URL}/chats`, {
-        method: 'GET',
+      const response = await axios.get(`${BACKEND_URL}/chats`, {
         headers: {
           'Content-Type': 'application/json',
           'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiJkMjg2YTk2Yy00ZjU2LTRmYmMtYWEyMS1kN2RhZGNlYWZjYTAiLCJpYXQiOjE3NTgxMzY4MjJ9.69WNiS6khu6T4MxEusi508JNhb6dsuNUw780FqxUaGg'
         }
       });
 
-      if (!response.ok) {
+      if (!response.data) {
         throw new Error('Failed to fetch chat history');
       }
 
-      const data = await response.json();
+      const data = response.data;
 
       // Transform backend data to display format
-      const formattedMessages:any = [];
+      const formattedMessages: any = [];
       if (data.chats && Array.isArray(data.chats)) {
         data.chats.forEach((chat: { id: any; prompt: any; created_at: string | number | Date; action: any; response: any; updated_at: string | number | Date; }) => {
           // Add user message
@@ -96,51 +95,39 @@ export default function AIChat() {
     }
   };
 
-  const sendRequest = async (userMessage:any) => {
+  const sendRequest = async (userMessage: any) => {
     try {
       setSending(true);
 
-      // First, analyze the prompt
-      const analyzeResponse = await fetch(`${BACKEND_URL}/prompt/analyze`, {
-        method: 'POST',
+      // First, analyze the prompt using axios
+      const analyzeResponse = await axios.post(`${BACKEND_URL}/prompt/analyze`, {
+        prompt: userMessage
+      }, {
         headers: {
           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          prompt: userMessage
-        })
+        }
       });
 
-      if (!analyzeResponse.ok) {
-        throw new Error('Failed to analyze prompt');
-      }
+      const action = analyzeResponse.data?.res || 'general';
+      console.log('Analyze response:', analyzeResponse.data);
 
-      const analyzeData = await analyzeResponse.json();
-      const action = analyzeData.res;
-
-      // Then generate the response
-      const generateResponse = await fetch(`${BACKEND_URL}/template/generate`, {
-        method: 'POST',
+      // Then generate the response using axios
+      const generateResponse = await axios.post(`${BACKEND_URL}/template/generate`, {
+        prompt: userMessage,
+        action: action
+      }, {
         headers: {
           'Content-Type': 'application/json',
           'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiJkMjg2YTk2Yy00ZjU2LTRmYmMtYWEyMS1kN2RhZGNlYWZjYTAiLCJpYXQiOjE3NTgxMzY4MjJ9.69WNiS6khu6T4MxEusi508JNhb6dsuNUw780FqxUaGg'
-        },
-        body: JSON.stringify({
-          prompt: userMessage,
-          action: action
-        })
+        }
       });
 
-      if (!generateResponse.ok) {
-        throw new Error('Failed to generate response');
-      }
+      console.log('Generate response:', generateResponse.data);
 
-      const generateData = await generateResponse.json();
-
-      console.log('Generate Data:', generateData);
-
-      // Extract the response content based on the actual structure
+      // Parse the response content based on the actual structure
       let responseContent = "I've processed your request. Please check for any updates.";
+      
+      const generateData = generateResponse.data;
       
       if (generateData.stock_report) {
         responseContent = generateData.stock_report;
@@ -148,8 +135,14 @@ export default function AIChat() {
         responseContent = generateData.portfolio_report;
       } else if (generateData.message) {
         responseContent = generateData.message;
+      } else if (generateData.response) {
+        responseContent = generateData.response;
       } else if (typeof generateData === 'string') {
         responseContent = generateData;
+      } else {
+        // If the response has a different structure, try to stringify it for debugging
+        console.log('Unexpected response structure:', generateData);
+        responseContent = JSON.stringify(generateData, null, 2);
       }
 
       // Add AI response to messages
@@ -170,20 +163,30 @@ export default function AIChat() {
       // Force re-render
       setForceUpdate(prev => prev + 1);
 
-      // Optionally refresh chat history to ensure sync with backend
-      // await fetchChatHistory();
-
     } catch (error) {
       console.error('Error sending request:', error);
 
+      // Parse error message for better user feedback
+      let errorMessage = "I apologize, but I encountered an error processing your request. Please try again later.";
+      
+      if (axios.isAxiosError(error)) {
+        if (error.response?.data?.message) {
+          errorMessage = `Error: ${error.response.data.message}`;
+        } else if (error.response?.status) {
+          errorMessage = `Server error (${error.response.status}): ${error.response.statusText}`;
+        } else if (error.code === 'ECONNREFUSED') {
+          errorMessage = "Unable to connect to the server. Please check if the backend is running.";
+        }
+      }
+
       // Add error message
-      const errorMessage: ChatMessage = {
+      const errorResponse: ChatMessage = {
         id: `error-${Date.now()}`,
         type: 'bot',
-        content: "I apologize, but I encountered an error processing your request. Please try again later.",
+        content: errorMessage,
         timestamp: new Date()
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages(prev => [...prev, errorResponse]);
     } finally {
       setSending(false);
     }
@@ -202,7 +205,7 @@ export default function AIChat() {
     await sendRequest(text);
   };
 
-  const handleSendMessage = async (e:any) => {
+  const handleSendMessage = async (e: any) => {
     e.preventDefault();
     const currentMessage = message;
     setMessage('');
@@ -213,6 +216,30 @@ export default function AIChat() {
     await sendUserMessage(prompt);
   };
 
+  // Async function for quick action requests
+  const handleQuickAction = async (action: string, prompt: string) => {
+    try {
+      // Make the axios request but don't wait for it to complete before calling handleQuickPrompt
+      const requestPromise = axios.post(`${BACKEND_URL}/template/generate`, {
+        action: action,
+        prompt: prompt
+      }, {
+        headers: {
+          'token': token
+        }
+      });
+
+      // Call handleQuickPrompt to update UI immediately
+      await handleQuickPrompt(prompt);
+
+      // Log the response when it completes
+      const response = await requestPromise;
+      console.log(`${action} response:`, response.data);
+    } catch (error) {
+      console.error(`Error with ${action} request:`, error);
+    }
+  };
+
   const handleStockCompareSubmit = async () => {
     const a = compareA.trim().toUpperCase();
     const b = compareB.trim().toUpperCase();
@@ -221,9 +248,9 @@ export default function AIChat() {
     setCompareA('');
     setCompareB('');
     const prompt = `Compare two stocks: ${a} vs ${b} over 1 year. Include revenue growth, margins, valuation (P/E, EV/EBITDA), price performance, volatility, and a concise verdict.`;
-    await handleQuickPrompt(prompt);
+    
+    await handleQuickAction('compare stocks', prompt);
   };
-
 
   const getActionBadge = (action: string) => {
     if (!action) return null;
@@ -259,8 +286,10 @@ export default function AIChat() {
   }
 
   return (
-  <div className="flex flex-col h-screen">
-    <Header />
+  <div className="flex flex-col h-screen relative">
+    <div className="fixed top-0 left-0 right-0 z-50">
+      <Header />
+    </div>
     <div className="dark-card flex flex-col flex-1 m-6">
       {/* Chat Header removed per request */}
 
@@ -342,21 +371,21 @@ export default function AIChat() {
             <button
               className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/20 hover:bg-white hover:text-black cursor-pointer"
               disabled={sending}
-              onClick={() => handleQuickPrompt('Summarize today\'s top world market news in 10 concise bullet points with tickers if relevant.')}
+              onClick={() => handleQuickAction('world news', 'Summarize today\'s top world market news in 10 concise bullet points with tickers if relevant.')}
             >
               World News
             </button>
             <button
               className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/20 hover:bg-white hover:text-black cursor-pointer"
               disabled={sending}
-              onClick={() => handleQuickPrompt('List 5 current mega trends impacting global markets, each with a brief explanation and 2-3 representative tickers.')}
+              onClick={() => handleQuickAction('megatrends', 'List 5 current mega trends impacting global markets, each with a brief explanation and 2-3 representative tickers.')}
             >
               Mega Trend
             </button>
             <button
               className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/20 hover:bg-white hover:text-black cursor-pointer"
               disabled={sending}
-              onClick={() => handleQuickPrompt('Which major FX pairs show the strongest momentum this week? Provide brief technical and macro context and 1 risk per idea.')}
+              onClick={() => handleQuickAction('best currencies', 'Which major FX pairs show the strongest momentum this week? Provide brief technical and macro context and 1 risk per idea')}
             >
               Best Currency
             </button>
@@ -365,7 +394,10 @@ export default function AIChat() {
                 type="button"
                 className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/20 hover:bg-white hover:text-black cursor-pointer"
                 disabled={sending}
-                onClick={() => setShowCountryDropdown(v => !v)}
+                onClick={() => {
+                  setShowCountryDropdown(v => !v)
+                  handleQuickAction('economic cycle', `generate a report on country ${selectedCountry}`)
+                }}
               >
                 Country Economic Cycle
               </button>
@@ -375,10 +407,10 @@ export default function AIChat() {
                     <button
                       key={c}
                       className="block w-full text-left px-2 py-1 rounded hover:bg-gray-700 text-gray-100"
-                      onClick={() => {
+                      onClick={async () => {
                         setSelectedCountry(c);
                         setShowCountryDropdown(false);
-                        handleQuickPrompt(`Analyze the current economic cycle position of ${c}. Include GDP trend, inflation, rates, PMI, employment, and likely equity/FX/bond implications in brief bullets.`);
+                        await handleQuickAction('economic cycle', `generate a report on country ${c}`);
                       }}
                     >
                       {c}
@@ -434,7 +466,7 @@ export default function AIChat() {
             <button
               className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/20 hover:bg-white hover:text-black cursor-pointer"
               disabled={sending}
-              onClick={() => handleQuickPrompt('List upcoming IPO/stock listings over the next 2 weeks with exchange, expected size (if available), sector, and a one-line thesis.')}
+              onClick={() => handleQuickAction('upcoming listings', 'List upcoming IPO/stock listings over the next 2 weeks with exchange, expected size (if available), sector, and a one-line thesis.')}
             >
               Upcoming Listings
             </button>

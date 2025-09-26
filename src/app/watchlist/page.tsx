@@ -40,8 +40,10 @@ function Watchlist() {
   };
 
   return (
-    <>
+    <div className="relative">
+      <div className="fixed top-0 left-0 right-0 z-50">
         <Header/>             
+      </div>
     <div className="p-6">
       <div className="dark-card p-6 mb-6">
         <h1 className="text-2xl font-bold text-white mb-4">Stock Watchlist</h1>
@@ -92,7 +94,7 @@ function Watchlist() {
         </div>
       )}
     </div>
-    </>
+    </div>
   );
 }
 
