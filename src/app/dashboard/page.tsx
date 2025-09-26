@@ -2,13 +2,18 @@
 import { useState, useEffect } from 'react';
 import { Send, Bot, User, Loader2 } from 'lucide-react';
 import { Header } from "@/components/header"
+import axios from "axios";
 
-
-const BACKEND_URL = 'http://localhost:3000'; 
+const BACKEND_URL = 'http://localhost:8080'; 
 
 export default function AIChat() {
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
   const [message, setMessage] = useState('');
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<string>('United States');
+  const [showCompareForm, setShowCompareForm] = useState(false);
+  const [compareA, setCompareA] = useState('');
+  const [compareB, setCompareB] = useState('');
   type ChatMessage = {
     id: string;
     type: 'user' | 'bot';
@@ -20,6 +25,10 @@ export default function AIChat() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [forceUpdate, setForceUpdate] = useState(0);
+  const countries = [
+    'United States', 'India', 'United Kingdom', 'China', 'Japan', 'Germany',
+    'Canada', 'Australia', 'Brazil', 'South Africa', 'Singapore', 'United Arab Emirates'
+  ];
 
   useEffect(() => {
     fetchChatHistory();
@@ -180,28 +189,39 @@ export default function AIChat() {
     }
   };
 
+  const sendUserMessage = async (text: string) => {
+    if (!text.trim() || sending) return;
+    const newMessage: ChatMessage = {
+      id: `user-${Date.now()}`,
+      type: 'user',
+      content: text,
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, newMessage]);
+    setForceUpdate(prev => prev + 1);
+    await sendRequest(text);
+  };
+
   const handleSendMessage = async (e:any) => {
     e.preventDefault();
-    if (message.trim() && !sending) {
-      // Add user message immediately
-      const newMessage: ChatMessage = {
-        id: `user-${Date.now()}`,
-        type: 'user',
-        content: message,
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, newMessage]);
-      
-      // Force re-render
-      setForceUpdate(prev => prev + 1);
+    const currentMessage = message;
+    setMessage('');
+    await sendUserMessage(currentMessage);
+  };
 
-      // Store message before clearing
-      const currentMessage = message;
-      setMessage('');
+  const handleQuickPrompt = async (prompt: string) => {
+    await sendUserMessage(prompt);
+  };
 
-      // Send request to backend
-      await sendRequest(currentMessage);
-    }
+  const handleStockCompareSubmit = async () => {
+    const a = compareA.trim().toUpperCase();
+    const b = compareB.trim().toUpperCase();
+    if (!a || !b || a === b) return;
+    setShowCompareForm(false);
+    setCompareA('');
+    setCompareB('');
+    const prompt = `Compare two stocks: ${a} vs ${b} over 1 year. Include revenue growth, margins, valuation (P/E, EV/EBITDA), price performance, volatility, and a concise verdict.`;
+    await handleQuickPrompt(prompt);
   };
 
 
@@ -242,18 +262,10 @@ export default function AIChat() {
   <div className="flex flex-col h-screen">
     <Header />
     <div className="dark-card flex flex-col flex-1 m-6">
-      {/* Chat Header */}
-      <div className="p-6 border-b border-gray-800">
-        <div className="flex items-center space-x-3">
-          <div className="p-2 bg-blue-600 rounded-lg">
-            <Bot className="h-5 w-5 text-white" />
-          </div>
-          <h3 className="text-xl font-bold text-white">AI Trading Assistant</h3>
-        </div>
-      </div>
+      {/* Chat Header removed per request */}
 
       {/* Messages Container */}
-      <div className="flex-1 p-6 overflow-y-auto space-y-4" key={forceUpdate}>
+      <div className="flex-1 p-6 overflow-y-auto space-y-4 bg-black/20 rounded-xl border border-white/10 backdrop-blur-sm" key={forceUpdate}>
         {messages.length === 0 ? (
           <div className="text-center text-gray-400 mt-10">
             <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -274,7 +286,7 @@ export default function AIChat() {
                   <div className={`p-2 rounded-full ${msg.type === 'user' ? 'bg-blue-600' : 'bg-gray-700'}`}>
                     {msg.type === 'user' ? <User className="h-4 w-4 text-white" /> : <Bot className="h-4 w-4 text-white" />}
                   </div>
-                  <div className={`p-4 rounded-lg ${msg.type === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-100'}`}>
+                  <div className={`p-4 rounded-lg ${msg.type === 'user' ? 'bg-blue-600/60 text-white' : 'bg-gray-800/50 text-gray-100'} backdrop-blur-md shadow-md border border-white/10`}>
                     {msg.action && msg.type === 'bot' && getActionBadge(msg.action)}
                     <p className="text-sm whitespace-pre-line">
                       {isLongAIResponse && !isExpanded
@@ -312,7 +324,7 @@ export default function AIChat() {
               <div className="p-2 rounded-full bg-gray-700">
                 <Bot className="h-4 w-4 text-white" />
               </div>
-              <div className="p-4 rounded-lg bg-gray-800">
+              <div className="p-4 rounded-lg bg-gray-800/50 backdrop-blur-md shadow-md border border-white/10">
                 <div className="flex items-center space-x-2">
                   <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
                   <span className="text-sm text-gray-400">Processing...</span>
@@ -323,8 +335,117 @@ export default function AIChat() {
         )}
       </div>
 
-      {/* Input Form - sticks to bottom */}
+      {/* Quick Actions above input (separate) */}
+      <div className="p-6">
+        <div className="bg-black text-white border border-white/10 rounded-xl px-4 py-4 shadow-lg">
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <button
+              className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/20 hover:bg-white hover:text-black cursor-pointer"
+              disabled={sending}
+              onClick={() => handleQuickPrompt('Summarize today\'s top world market news in 10 concise bullet points with tickers if relevant.')}
+            >
+              World News
+            </button>
+            <button
+              className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/20 hover:bg-white hover:text-black cursor-pointer"
+              disabled={sending}
+              onClick={() => handleQuickPrompt('List 5 current mega trends impacting global markets, each with a brief explanation and 2-3 representative tickers.')}
+            >
+              Mega Trend
+            </button>
+            <button
+              className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/20 hover:bg-white hover:text-black cursor-pointer"
+              disabled={sending}
+              onClick={() => handleQuickPrompt('Which major FX pairs show the strongest momentum this week? Provide brief technical and macro context and 1 risk per idea.')}
+            >
+              Best Currency
+            </button>
+            <div className="relative">
+              <button
+                type="button"
+                className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/20 hover:bg-white hover:text-black cursor-pointer"
+                disabled={sending}
+                onClick={() => setShowCountryDropdown(v => !v)}
+              >
+                Country Economic Cycle
+              </button>
+              {showCountryDropdown && (
+                <div className="absolute mt-2 bg-gray-800 border border-gray-700 rounded-md p-2 z-20 max-h-64 overflow-y-auto w-64">
+                  {countries.map((c) => (
+                    <button
+                      key={c}
+                      className="block w-full text-left px-2 py-1 rounded hover:bg-gray-700 text-gray-100"
+                      onClick={() => {
+                        setSelectedCountry(c);
+                        setShowCountryDropdown(false);
+                        handleQuickPrompt(`Analyze the current economic cycle position of ${c}. Include GDP trend, inflation, rates, PMI, employment, and likely equity/FX/bond implications in brief bullets.`);
+                      }}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="relative">
+              <button
+                className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/20 hover:bg-white hover:text-black cursor-pointer"
+                disabled={sending}
+                onClick={() => setShowCompareForm(v => !v)}
+              >
+                Stock Comparison
+              </button>
+              {showCompareForm && (
+                <div className="absolute mt-2 bg-gray-800 border border-gray-700 rounded-lg p-3 z-20 w-[340px] shadow-xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <input
+                      value={compareA}
+                      onChange={(e) => setCompareA(e.target.value)}
+                      placeholder="Ticker 1 (e.g., AAPL)"
+                      className="input-field flex-1"
+                      disabled={sending}
+                    />
+                    <input
+                      value={compareB}
+                      onChange={(e) => setCompareB(e.target.value)}
+                      placeholder="Ticker 2 (e.g., MSFT)"
+                      className="input-field flex-1"
+                      disabled={sending}
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <button
+                      className="rounded-full px-4 py-2 bg-black text-white border border-white/20 hover:bg-black/90"
+                      onClick={() => setShowCompareForm(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="rounded-full px-4 py-2 bg-black text-white border border-white/20 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={sending || !compareA.trim() || !compareB.trim() || compareA.trim().toUpperCase() === compareB.trim().toUpperCase()}
+                      onClick={handleStockCompareSubmit}
+                    >
+                      Compare
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            <button
+              className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/20 hover:bg-white hover:text-black cursor-pointer"
+              disabled={sending}
+              onClick={() => handleQuickPrompt('List upcoming IPO/stock listings over the next 2 weeks with exchange, expected size (if available), sector, and a one-line thesis.')}
+            >
+              Upcoming Listings
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Input - sticks to bottom */}
       <div className="p-6 border-t border-gray-800 sticky bottom-0 bg-gray-900 z-10">
+
+        {/* Input */}
         <div className="flex space-x-3">
           <input
             type="text"
