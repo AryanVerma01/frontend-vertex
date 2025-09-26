@@ -1,7 +1,7 @@
-// TradingViewWidget.jsx
+"use client"
 import React, { useEffect, useRef, memo } from "react";
 
-function TradingViewWidget({ symbol }) {
+function TradingViewWidget({ symbol }: { symbol: string }) {
 
   const container = useRef<HTMLDivElement>(null);
 
