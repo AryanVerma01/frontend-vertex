@@ -49,8 +49,14 @@ export default function StockAnalysis(){
         const yearHigh = response.data.yearHigh;
         const yearLow = response.data.yearLow;
         const currentPrice = response.data.currentPrice;
+        const stockCorporateActionData = response.data.stockCorporateActionData;
+        const stockDetailsReusableData = response.data.stockDetailsReusableData;
+
+
+        const stockDetails = response.data.stockDetails;
         const apiFinancials = Array.isArray(response.data.financials) ? response.data.financials : [];
         
+    
         setFinancialData({
             companyName,
             industry,
@@ -67,38 +73,60 @@ export default function StockAnalysis(){
         const Arr = apiFinancials.slice(0,3).filter(Boolean);
         setFinancialArray({ financials: Arr });
 
+        console.log(financialdata);
         }
     }
 
 
     return(
-        <div className="relative">
-            <div className="fixed top-0 left-0 right-0 z-50">
+        <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-black text-gray-100">
+            <Header/>
+            
+            <div className="container mx-auto px-6 py-8 space-y-8">
+                {/* Search Section */}
+                <div className="bg-black/60 backdrop-blur-md border border-white/10 rounded-xl shadow-lg p-6">
+                    <h2 className="text-2xl font-bold mb-4 text-white">Stock Analysis</h2>
+                    <div className="flex gap-3">
+                        <input
+                            type="text"
+                            placeholder="Enter Nifty 50 symbol (e.g., RELIANCE, TCS)"
+                            value={inputValue}
+                            onChange={(e) => setInputValue(e.target.value)}
+                            onKeyPress={handleKeyPress}
+                            className="input-field flex-1 bg-gray-800/50 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
+                        />
+                        <button
+                            onClick={handleAddSymbol}
+                            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-200 shadow-lg hover:shadow-xl"
+                        >
+                            Add Symbol
+                        </button>
+                    </div>
+                </div>
 
-                <Header/>
+                {/* Financial Dashboard */}
+                <div className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg overflow-hidden">
+                    <FinancialResearchDashboard stockData={financialdata}/>
+                </div>
 
+                {/* Trading View Chart */}
+                <div className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg overflow-hidden">
+                    <div className="p-4 border-b border-white/10">
+                        <h3 className="text-xl font-semibold text-white">Price Chart</h3>
+                    </div>
+                    <div className="w-full h-140">
+                        <TradingViewWidget symbol={symbols[0] ?? "HDFCBANK"} />
+                    </div>
+                </div>
+
+                {/* Financial Charts */}
+                <div className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg overflow-hidden">
+                    <div className="p-4 border-b border-white/10">
+                        <h3 className="text-xl font-semibold text-white">Financial Analysis</h3>
+                    </div>
+                    <DynamicFinancialCharts data={financialArray} />
+                </div>
             </div>
-            <div className="flex gap-3 mb-4">
-            <input
-                type="text"
-                placeholder="Enter Nifty 50 symbol (e.g., RELIANCE, TCS)"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyPress={handleKeyPress}
-                className="input-field flex-1"
-            />
-            <button
-                onClick={handleAddSymbol}
-                className="primary-button"
-            >
-                Add Symbol
-            </button>
-            </div>
-            <FinancialResearchDashboard stockData={financialdata}/>
-            <div className="w-full h-150">
-                <TradingViewWidget symbol={symbols[0] ?? "HDFCBANK"} />
-            </div>
-            <DynamicFinancialCharts data={financialArray} /> 
         </div>
     )
 }

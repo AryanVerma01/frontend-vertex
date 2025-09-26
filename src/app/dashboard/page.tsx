@@ -286,24 +286,25 @@ export default function AIChat() {
   }
 
   return (
-  <div className="flex flex-col h-screen relative">
+  <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-black text-gray-100">
     <div className="fixed top-0 left-0 right-0 z-50">
       <Header />
     </div>
-    <div className="dark-card flex flex-col flex-1 m-6">
+    <div className="flex flex-col flex-1">
       {/* Chat Header removed per request */}
 
       {/* Messages Container */}
-      <div className="flex-1 p-6 overflow-y-auto space-y-4 bg-black/20 rounded-xl border border-white/10 backdrop-blur-sm" key={forceUpdate}>
-        {messages.length === 0 ? (
-          <div className="text-center text-gray-400 mt-10">
-            <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Bot className="h-8 w-8 text-white" />
+      <div className="flex-1 overflow-y-auto" key={forceUpdate}>
+        <div className="mx-auto max-w-4xl p-6 space-y-4 bg-black/20 rounded-xl border border-white/10 backdrop-blur-sm shadow-lg">
+          {messages.length === 0 ? (
+            <div className="text-center text-gray-400 mt-10">
+              <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Bot className="h-8 w-8 text-white" />
+              </div>
+              <p className="text-lg">Start a conversation by typing a message below</p>
             </div>
-            <p className="text-lg">Start a conversation by typing a message below</p>
-          </div>
-        ) : (
-          messages.map((msg) => {
+          ) : (
+            messages.map((msg) => {
             const isLongAIResponse = msg.type === 'bot' && (msg.action === 'analyze stock' || msg.action === 'analyze portfolio') && msg.content.length > 500;
             const isExpanded = expandedIds.includes(msg.id);
             return (
@@ -343,30 +344,31 @@ export default function AIChat() {
                 </div>
               </div>
             );
-          })
-        )}
+            })
+          )}
 
-        {/* Show sending indicator */}
-        {sending && (
-          <div className="flex justify-start">
-            <div className="flex items-start space-x-3 max-w-[80%]">
-              <div className="p-2 rounded-full bg-gray-700">
-                <Bot className="h-4 w-4 text-white" />
-              </div>
-              <div className="p-4 rounded-lg bg-gray-800/50 backdrop-blur-md shadow-md border border-white/10">
-                <div className="flex items-center space-x-2">
-                  <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
-                  <span className="text-sm text-gray-400">Processing...</span>
+          {/* Show sending indicator */}
+          {sending && (
+            <div className="flex justify-start">
+              <div className="flex items-start space-x-3 max-w-[80%]">
+                <div className="p-2 rounded-full bg-gray-700">
+                  <Bot className="h-4 w-4 text-white" />
+                </div>
+                <div className="p-4 rounded-lg bg-gray-800/50 backdrop-blur-md shadow-md border border-white/10">
+                  <div className="flex items-center space-x-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
+                    <span className="text-sm text-gray-400">Processing...</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Quick Actions above input (separate) */}
-      <div className="p-6">
-        <div className="bg-black text-white border border-white/10 rounded-xl px-4 py-4 shadow-lg">
+      <div className="px-6 pt-4">
+        <div className="mx-auto max-w-4xl bg-black text-white border border-white/10 rounded-xl px-4 py-4 shadow-lg">
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button
               className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/20 hover:bg-white hover:text-black cursor-pointer"
@@ -475,35 +477,35 @@ export default function AIChat() {
       </div>
 
       {/* Input - sticks to bottom */}
-      <div className="p-6 border-t border-gray-800 sticky bottom-0 bg-gray-900 z-10">
-
-        {/* Input */}
-        <div className="flex space-x-3">
-          <input
-            type="text"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendMessage(e);
-              }
-            }}
-            placeholder="Ask about stocks, market trends, or trading strategies..."
-            className="input-field flex-1"
-            disabled={sending}
-          />
-          <button
-            onClick={handleSendMessage}
-            disabled={sending || !message.trim()}
-            className="primary-button disabled:opacity-50 disabled:cursor-not-allowed p-3"
-          >
-            {sending ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <Send className="h-5 w-5" />
-            )}
-          </button>
+      <div className="sticky bottom-0 z-10 px-6 pb-6">
+        <div className="mx-auto max-w-4xl bg-black/60 backdrop-blur-md border border-white/10 rounded-xl shadow-lg p-3">
+          <div className="flex space-x-3">
+            <input
+              type="text"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage(e);
+                }
+              }}
+              placeholder="Ask about stocks, market trends, or trading strategies..."
+              className="input-field flex-1"
+              disabled={sending}
+            />
+            <button
+              onClick={handleSendMessage}
+              disabled={sending || !message.trim()}
+              className="primary-button disabled:opacity-50 disabled:cursor-not-allowed p-3"
+            >
+              {sending ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Send className="h-5 w-5" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

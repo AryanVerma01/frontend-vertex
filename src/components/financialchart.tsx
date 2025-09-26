@@ -19,7 +19,7 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
   data
 }) => {
   const [selectedStatement, setSelectedStatement] = useState<StatementKey>('INC');
-  const [selectedMetrics, setSelectedMetrics] = useState(['TotalRevenue', 'NetIncome']);
+  const [selectedMetrics, setSelectedMetrics] = useState<string[]>([]);
   const [chartType, setChartType] = useState('line');
 
   // Update selected metrics when statement changes or data changes
@@ -28,15 +28,8 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
     if (effective?.financials?.length) {
       const availableMetrics = getAvailableMetrics(selectedStatement);
       if (availableMetrics.length > 0) {
-        // Keep existing metrics that are still available, or use first available metric
-        const validMetrics = selectedMetrics.filter(metric => 
-          availableMetrics.some(available => available.key === metric)
-        );
-        if (validMetrics.length === 0) {
-          setSelectedMetrics([availableMetrics[0].key]);
-        } else {
-          setSelectedMetrics(validMetrics);
-        }
+        // Enable ALL available metrics by default
+        setSelectedMetrics(availableMetrics.map(metric => metric.key));
       }
     }
   }, [data, selectedStatement]);
@@ -124,8 +117,8 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
   const CustomTooltip: React.FC<{ active?: boolean; payload?: any[]; label?: string }> = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg">
-          <p className="font-semibold text-gray-900">{`Year: ${label}`}</p>
+        <div className="bg-gray-900/90 p-4 border border-white/10 rounded-lg shadow-lg text-gray-100">
+          <p className="font-semibold text-white">{`Year: ${label}`}</p>
           {payload.map((entry, index) => {
             const metric = getAvailableMetrics(selectedStatement).find((m) => m.key === entry.dataKey);
             return (
@@ -143,7 +136,7 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
   const chartData = transformDataForChart((data || sampleData), selectedStatement, selectedMetrics);
 
   const StatementTabs = () => (
-    <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+    <div className="flex space-x-1 bg-gray-800/60 p-1 rounded-lg border border-white/10">
       {([
         { key: 'INC', label: 'Income Statement', icon: TrendingUp },
         { key: 'BAL', label: 'Balance Sheet', icon: BarChart3 },
@@ -155,13 +148,14 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
             setSelectedStatement(key);
             const availableMetrics = getAvailableMetrics(key);
             if (availableMetrics.length > 0) {
-              setSelectedMetrics([availableMetrics[0].key]);
+              // Enable ALL metrics when switching statements
+              setSelectedMetrics(availableMetrics.map(metric => metric.key));
             }
           }}
           className={`px-4 py-2 rounded-md text-sm font-medium flex items-center space-x-2 transition-colors ${
             selectedStatement === key
-              ? 'bg-white text-blue-600 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-blue-600 text-white shadow'
+              : 'text-gray-200 hover:text-white hover:bg-gray-700/60'
           }`}
         >
           <Icon size={16} />
@@ -174,7 +168,23 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
 
   const MetricSelector = () => (
     <div className="space-y-3">
-      <h3 className="text-sm font-medium text-gray-900">Select Metrics to Display</h3>
+      <div className="flex justify-between items-center">
+        <h3 className="text-sm font-medium text-gray-100">Select Metrics to Display</h3>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setSelectedMetrics(getAvailableMetrics(selectedStatement).map(m => m.key))}
+            className="text-xs px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+          >
+            All
+          </button>
+          <button
+            onClick={() => setSelectedMetrics([])}
+            className="text-xs px-2 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors"
+          >
+            None
+          </button>
+        </div>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto">
         {getAvailableMetrics(selectedStatement).map(metric => (
           <label key={metric.key} className="flex items-center space-x-2">
@@ -188,9 +198,9 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
                   setSelectedMetrics(selectedMetrics.filter(m => m !== metric.key));
                 }
               }}
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className="rounded border-gray-600 text-blue-500 focus:ring-blue-500 bg-gray-800"
             />
-            <span className="text-sm text-gray-700 truncate">{metric.displayName}</span>
+            <span className="text-sm text-gray-300 truncate">{metric.displayName}</span>
           </label>
         ))}
       </div>
@@ -210,7 +220,7 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
           className={`px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-1 ${
             chartType === type
               ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              : 'bg-gray-800 text-gray-200 hover:bg-gray-700'
           }`}
         >
           <Icon size={14} />
@@ -222,14 +232,14 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
 
   const renderChart = () => {
     if (!chartData.length || !selectedMetrics.length) {
-      return (
-        <div className="h-96 flex items-center justify-center text-gray-500">
+    return (
+      <div className="h-96 flex items-center justify-center text-gray-400">
           {'No data available for selected metrics'}
         </div>
       );
     }
 
-    const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
+    const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#EC4899', '#84CC16', '#F97316', '#6366F1'];
 
     const commonProps = {
       data: chartData,
@@ -239,9 +249,9 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
     if (chartType === 'line') {
       return (
         <LineChart {...commonProps}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-          <XAxis dataKey="year" stroke="#6B7280" fontSize={12} />
-          <YAxis stroke="#6B7280" fontSize={12} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#1F2937" />
+          <XAxis dataKey="year" stroke="#9CA3AF" fontSize={12} />
+          <YAxis stroke="#9CA3AF" fontSize={12} />
           <Tooltip content={<CustomTooltip />} />
           {selectedMetrics.map((metric, index) => (
             <Line
@@ -260,9 +270,9 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
     if (chartType === 'bar') {
       return (
         <BarChart {...commonProps}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-          <XAxis dataKey="year" stroke="#6B7280" fontSize={12} />
-          <YAxis stroke="#6B7280" fontSize={12} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#1F2937" />
+          <XAxis dataKey="year" stroke="#9CA3AF" fontSize={12} />
+          <YAxis stroke="#9CA3AF" fontSize={12} />
           <Tooltip content={<CustomTooltip />} />
           {selectedMetrics.map((metric, index) => (
             <Bar
@@ -279,9 +289,9 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
     if (chartType === 'area') {
       return (
         <AreaChart {...commonProps}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-          <XAxis dataKey="year" stroke="#6B7280" fontSize={12} />
-          <YAxis stroke="#6B7280" fontSize={12} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#1F2937" />
+          <XAxis dataKey="year" stroke="#9CA3AF" fontSize={12} />
+          <YAxis stroke="#9CA3AF" fontSize={12} />
           <Tooltip content={<CustomTooltip />} />
           {selectedMetrics.map((metric, index) => (
             <Area
@@ -301,20 +311,18 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
     return <></>;
   };
 
-  // duplicate sampleData removed
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+    <div className="min-h-screen bg-gray-900 p-6 text-gray-100">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-gray-800 rounded-xl shadow-sm border border-gray-700 p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Financial Data Visualization</h1>
-              <p className="text-gray-600 mt-1">Interactive charts for comprehensive financial analysis</p>
+              <h1 className="text-2xl font-bold text-white">Financial Data Visualization</h1>
+              <p className="text-gray-300 mt-1">Interactive charts for comprehensive financial analysis</p>
             </div>
             {!data && (
-              <div className="text-sm bg-blue-50 text-blue-700 px-3 py-2 rounded-lg">
+              <div className="text-sm bg-blue-900 text-blue-300 px-3 py-2 rounded-lg border border-blue-700">
                 Using sample data for demonstration
               </div>
             )}
@@ -322,14 +330,14 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
         </div>
 
         {/* Controls */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-gray-800 rounded-xl shadow-sm border border-gray-700 p-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div>
-              <h3 className="text-sm font-medium text-gray-900 mb-3">Financial Statement</h3>
+              <h3 className="text-sm font-medium text-gray-200 mb-3">Financial Statement</h3>
               <StatementTabs />
             </div>
             <div>
-              <h3 className="text-sm font-medium text-gray-900 mb-3">Chart Type</h3>
+              <h3 className="text-sm font-medium text-gray-200 mb-3">Chart Type</h3>
               <ChartTypeSelector />
             </div>
             <div>
@@ -339,15 +347,15 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
         </div>
 
         {/* Chart */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-gray-800 rounded-xl shadow-sm border border-gray-700 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-white">
               {selectedStatement === 'INC' && 'Income Statement Analysis'}
               {selectedStatement === 'BAL' && 'Balance Sheet Analysis'}
               {selectedStatement === 'CAS' && 'Cash Flow Analysis'}
             </h2>
             {selectedMetrics.length > 0 && chartData.length > 0 && (
-              <div className="flex items-center space-x-4 text-sm text-gray-600">
+              <div className="flex items-center space-x-4 text-sm text-gray-300">
                 <span>Showing {selectedMetrics.length} metric{selectedMetrics.length > 1 ? 's' : ''}</span>
                 <span>•</span>
                 <span>{chartData.length} years</span>
@@ -364,19 +372,19 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
 
         {/* Legend */}
         {selectedMetrics.length > 1 && chartData.length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Selected Metrics</h3>
+          <div className="bg-gray-800 rounded-xl shadow-sm border border-gray-700 p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">Selected Metrics</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {selectedMetrics.map((metric, index) => {
                 const metricInfo = getAvailableMetrics(selectedStatement).find(m => m.key === metric);
-                const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
+                const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#EC4899', '#84CC16', '#F97316', '#6366F1'];
                 return (
                   <div key={metric} className="flex items-center space-x-3">
                     <div 
                       className="w-4 h-4 rounded"
                       style={{ backgroundColor: colors[index % colors.length] }}
                     />
-                    <span className="text-sm text-gray-700">{metricInfo?.displayName || metric}</span>
+                    <span className="text-sm text-gray-200">{metricInfo?.displayName || metric}</span>
                   </div>
                 );
               })}
