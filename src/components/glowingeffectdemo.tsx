@@ -1,55 +1,63 @@
 "use client";
 
-import { Box, Lock, Search, Settings, Sparkles } from "lucide-react";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
+import type { ReactNode } from "react";
+import { MessageCircle, Brain, BarChart3, Zap, TrendingUp } from "lucide-react";
 
 export function GlowingEffectDemoSecond() {
   return (
+    <>
+      <h1 className="text-center text-3xl font-bold mb-10">
+        Trading Reimagined by Vertex
+      </h1>
+      <p className="text-center text-lg font-normal text-neutral-600 dark:text-neutral-400 mb-10">
+        Experience the future of trading with our revolutionary AI-powered platform.
+      </p>
 
-    <ul className="grid grid-cols-1 grid-rows-none gap-4 md:grid-cols-12 md:grid-rows-3 lg:gap-4 xl:max-h-[34rem] xl:grid-rows-2 mx-40">
-      <GridItem
-        area="md:[grid-area:1/1/2/7] xl:[grid-area:1/1/2/5]"
-        icon={<Box className="h-4 w-4 text-black dark:text-neutral-400" />}
-        title="Do things the right way"
-        description="Running out of copy so I'll write anything."
-      />
+      <ul className="grid grid-cols-1 grid-rows-none gap-4 md:grid-cols-12 md:grid-rows-3 lg:gap-4 xl:max-h-[34rem] xl:grid-rows-2 mx-40">
+        <GridItem
+          area="md:[grid-area:1/1/2/7] xl:[grid-area:1/1/2/5]"
+          icon={<MessageCircle className="h-4 w-4 text-black dark:text-neutral-400" />}
+          title="Natural Language Trading"
+          description="Simply type 'buy 10 Tesla shares' or 'analyze Netflix stock' and let our AI handle the complex execution and analysis."
+        />
 
-      <GridItem
-        area="md:[grid-area:1/7/2/13] xl:[grid-area:2/1/3/5]"
-        icon={<Settings className="h-4 w-4 text-black dark:text-neutral-400" />}
-        title="The best AI code editor ever."
-        description="Yes, it's true. I'm not even kidding. Ask my mom if you don't believe me."
-      />
+        <GridItem
+          area="md:[grid-area:1/7/2/13] xl:[grid-area:2/1/3/5]"
+          icon={<Brain className="h-4 w-4 text-black dark:text-neutral-400" />}
+          title="Advanced AI Assistant"
+          description="Get real-time market insights, stock analysis, and personalized trading recommendations powered by large language models."
+        />
+        <GridItem
+          area="md:[grid-area:2/1/3/7] xl:[grid-area:1/5/3/8]"
+          icon={<BarChart3 className="h-4 w-4 text-black dark:text-neutral-400" />}
+          title="Real-Time Analytics"
+          description="Access live market data, interactive charts, and comprehensive portfolio tracking with professional-grade tools."
+        />
 
-      <GridItem
-        area="md:[grid-area:2/1/3/7] xl:[grid-area:1/5/3/8]"
-        icon={<Lock className="h-4 w-4 text-black dark:text-neutral-400" />}
-        title="You should buy Aceternity UI Pro"
-        description="It's the best money you'll ever spend"
-      />
+        <GridItem
+          area="md:[grid-area:2/7/3/13] xl:[grid-area:1/8/2/13]"
+          icon={<Zap className="h-4 w-4 text-black dark:text-neutral-400" />}
+          title="Lightning Fast Execution"
+          description="Execute trades in milliseconds with our optimized infrastructure and direct market access for maximum efficiency."
+        />
 
-      <GridItem
-        area="md:[grid-area:2/7/3/13] xl:[grid-area:1/8/2/13]"
-        icon={<Sparkles className="h-4 w-4 text-black dark:text-neutral-400" />}
-        title="This card is also built by Cursor"
-        description="I'm not even kidding. Ask my mom if you don't believe me."
-      />
-
-      <GridItem
-        area="md:[grid-area:3/1/4/13] xl:[grid-area:2/8/3/13]"
-        icon={<Search className="h-4 w-4 text-black dark:text-neutral-400" />}
-        title="Coming soon on Aceternity UI"
-        description="I'm writing the code as I record this, no shit."
-      />
-    </ul>
+        <GridItem
+          area="md:[grid-area:3/1/4/13] xl:[grid-area:2/8/3/13]"
+          icon={<TrendingUp className="h-4 w-4 text-black dark:text-neutral-400" />}
+          title="Smart Portfolio Management"
+          description="AI-driven portfolio optimization, risk assessment, and automated rebalancing to maximize your returns."
+        />
+      </ul>
+    </>
   );
 }
 
 interface GridItemProps {
   area: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   title: string;
-  description: React.ReactNode;
+  description: ReactNode;
 }
 
 const GridItem = ({ area, icon, title, description }: GridItemProps) => {

@@ -19,9 +19,7 @@ export default function Halfsite(){
             <button className="group px-10 py-5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-2xl text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25">
               Start Free Trial
             </button>
-            <button className="px-10 py-5 border-2 border-slate-600 hover:border-blue-500 rounded-2xl text-lg font-semibold transition-all duration-300 hover:scale-105 hover:bg-slate-800/50">
-              Schedule Demo
-            </button>
+
           </div>
           <p className="text-sm text-gray-500">
             No credit card required • 14-day free trial • Cancel anytime
