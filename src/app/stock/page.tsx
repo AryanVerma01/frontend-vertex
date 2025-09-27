@@ -7,6 +7,7 @@ import TradingViewWidget from "@/components/TVAdvChart"
 import axios from "axios";
 import React, { useState, KeyboardEvent, useRef } from "react";
 import { BACKEND_URL, token } from "../dashboard/page";
+import { Search, TrendingUp, BarChart3, Loader2, Bot } from "lucide-react";
 
 // Component to render structured report data
 const StructuredReport = ({ data }: { data: any }) => {
@@ -225,6 +226,44 @@ const StructuredReport = ({ data }: { data: any }) => {
     );
 };
 
+// Loading Component
+const LoadingSpinner = ({ message }: { message?: string }) => (
+    <div className="flex flex-col items-center justify-center py-12">
+        <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500/20 border-t-blue-500"></div>
+            <div className="animate-ping absolute inset-0 rounded-full h-16 w-16 border-4 border-blue-500/20"></div>
+        </div>
+        <p className="mt-4 text-lg text-gray-300">{message || "Loading..."}</p>
+    </div>
+);
+
+// Empty State Component
+const EmptyState = () => (
+    <div className="flex flex-col items-center justify-center py-20">
+        <div className="w-32 h-32 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center mb-6 border border-blue-500/30">
+            <Search className="w-16 h-16 text-blue-400" />
+        </div>
+        <h3 className="text-2xl font-bold text-white mb-3">Ready to Analyze Stocks</h3>
+        <p className="text-gray-400 text-center max-w-md mb-6">
+            Enter a Nifty 50 stock symbol above to get comprehensive financial analysis, charts, and AI-powered insights.
+        </p>
+        <div className="flex gap-4 text-sm text-gray-500">
+            <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" />
+                <span>Real-time data</span>
+            </div>
+            <div className="flex items-center gap-2">
+                <BarChart3 className="w-4 h-4" />
+                <span>Financial charts</span>
+            </div>
+            <div className="flex items-center gap-2">
+                <Bot className="w-4 h-4" />
+                <span>AI analysis</span>
+            </div>
+        </div>
+    </div>
+);
+
 export default function StockAnalysis() {
     const [inputValue, setInputValue] = useState("");
     const [symbols, setSymbols] = useState<string[]>([]);
@@ -232,21 +271,25 @@ export default function StockAnalysis() {
     const [financialArray, setFinancialArray] = useState<{ financials: any[] } | undefined>(undefined);
     const [showAIOptions, setShowAIOptions] = useState(false);
     const [stockin, setstockin] = useState();
+    const [isLoadingStock, setIsLoadingStock] = useState(false);
+    const [hasSearched, setHasSearched] = useState(false);
     
     // Popup state
     const [showPopup, setShowPopup] = useState(false);
     const [popupData, setPopupData] = useState<any>(null);
     const [popupTitle, setPopupTitle] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingAI, setIsLoadingAI] = useState(false);
 
     const aiButtonRef = useRef<HTMLDivElement>(null);
 
-    const handleAddSymbol = () => {
+    const handleAddSymbol = async () => {
         const trimmed = inputValue.trim().toUpperCase();
         if (!trimmed) return;
+        
         setSymbols((prev) => (prev.includes(trimmed) ? prev : [...prev, trimmed]));
         setInputValue("");
-        getfinancialdata([trimmed])
+        setHasSearched(true);
+        await getfinancialdata([trimmed]);
     };
 
     const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -257,7 +300,12 @@ export default function StockAnalysis() {
 
     // Function to handle API calls and show popup
     const handleAPICall = async (endpoint: string, title: string) => {
-        setIsLoading(true);
+        if (!financialdata) {
+            alert("Please search for a stock first!");
+            return;
+        }
+        
+        setIsLoadingAI(true);
         setPopupTitle(title);
         setShowPopup(true);
         
@@ -271,7 +319,7 @@ export default function StockAnalysis() {
             console.error(`Error fetching ${title}:`, error);
             setPopupData({ error: `Failed to fetch ${title}` });
         } finally {
-            setIsLoading(false);
+            setIsLoadingAI(false);
         }
     };
 
@@ -284,45 +332,53 @@ export default function StockAnalysis() {
     };
 
     async function getfinancialdata(symbols: string[]) {
-        const response = await axios.get(`https://stock.indianapi.in/stock?name=${symbols[0]}`, {
-            headers: {
-                'X-Api-Key': 'sk-live-lOeu1A68LnXNz3d0Tav3j3SWijdNn76933lH0o5l'
-            }
-        })
-
-        if (response?.data) {
-            const {
-                companyName,
-                industry,
-                companyProfile,
-                exchangeCodeBse,
-                exchangeCodeNse,
-                peerCompanyList,
-                percentChange,
-                yearHigh,
-                yearLow,
-                currentPrice
-            } = response.data;
-
-            const apiFinancials = Array.isArray(response.data.financials) ? response.data.financials : [];
-
-            setFinancialData({
-                companyName,
-                industry,
-                companyProfile,
-                exchangeCodeBse,
-                exchangeCodeNse,
-                peerCompanyList,
-                percentChange,
-                yearHigh,
-                yearLow,
-                currentPrice
+        setIsLoadingStock(true);
+        try {
+            const response = await axios.get(`https://stock.indianapi.in/stock?name=${symbols[0]}`, {
+                headers: {
+                    'X-Api-Key': 'sk-live-lOeu1A68LnXNz3d0Tav3j3SWijdNn76933lH0o5l'
+                }
             });
 
-            setstockin(companyName);
+            if (response?.data) {
+                const {
+                    companyName,
+                    industry,
+                    companyProfile,
+                    exchangeCodeBse,
+                    exchangeCodeNse,
+                    peerCompanyList,
+                    percentChange,
+                    yearHigh,
+                    yearLow,
+                    currentPrice
+                } = response.data;
 
-            const Arr = apiFinancials.slice(0, 3).filter(Boolean);
-            setFinancialArray({ financials: Arr });
+                const apiFinancials = Array.isArray(response.data.financials) ? response.data.financials : [];
+
+                setFinancialData({
+                    companyName,
+                    industry,
+                    companyProfile,
+                    exchangeCodeBse,
+                    exchangeCodeNse,
+                    peerCompanyList,
+                    percentChange,
+                    yearHigh,
+                    yearLow,
+                    currentPrice
+                });
+
+                setstockin(companyName);
+
+                const Arr = apiFinancials.slice(0, 3).filter(Boolean);
+                setFinancialArray({ financials: Arr });
+            }
+        } catch (error) {
+            console.error('Error fetching stock data:', error);
+            alert('Failed to fetch stock data. Please check the symbol and try again.');
+        } finally {
+            setIsLoadingStock(false);
         }
     }
 
@@ -335,71 +391,89 @@ export default function StockAnalysis() {
                 <div className="bg-black/60 backdrop-blur-md border border-white/10 rounded-xl shadow-lg p-6 flex flex-col relative">
                     <h2 className="text-2xl font-bold mb-4 text-white">Stock Analysis</h2>
                     <div className="flex gap-3 items-center">
-                        <input
-                            type="text"
-                            placeholder="Enter Nifty 50 symbol (e.g., RELIANCE, TCS)"
-                            value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value)}
-                            onKeyPress={handleKeyPress}
-                            className="input-field flex-1 bg-gray-800/50 border border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 rounded-lg px-4 py-2"
-                        />
+                        <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                            <input
+                                type="text"
+                                placeholder="Enter Nifty 50 symbol (e.g., RELIANCE, TCS)"
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                                className="input-field w-full bg-gray-800/50 border border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 rounded-lg pl-10 pr-4 py-2"
+                                disabled={isLoadingStock}
+                            />
+                        </div>
                         <button
                             onClick={handleAddSymbol}
-                            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-200 shadow-lg"
+                            disabled={isLoadingStock || !inputValue.trim()}
+                            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors duration-200 shadow-lg flex items-center gap-2"
                         >
-                            Add Symbol
+                            {isLoadingStock ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Loading...
+                                </>
+                            ) : (
+                                "Analyze Stock"
+                            )}
                         </button>
 
                         {/* AI Button */}
                         <div ref={aiButtonRef} className="relative">
                             <button
                                 onClick={() => setShowAIOptions(!showAIOptions)}
-                                className="w-12 h-12 flex items-center justify-center rounded-full bg-violet-600 text-white font-bold shadow-lg hover:bg-violet-700 transition"
+                                disabled={!financialdata}
+                                className="w-12 h-12 flex items-center justify-center rounded-full bg-violet-600 disabled:bg-gray-600 text-white font-bold shadow-lg hover:bg-violet-700 disabled:hover:bg-gray-600 transition disabled:cursor-not-allowed"
+                                title={!financialdata ? "Search for a stock first" : "AI Analysis Options"}
                             >
-                                AI
+                                <Bot className="w-5 h-5" />
                             </button>
                         </div>
                     </div>
+
+                    {/* Show current symbol if exists */}
+                    {symbols.length > 0 && (
+                        <div className="mt-3 flex items-center gap-2">
+                            <span className="text-sm text-gray-400">Analyzing:</span>
+                            <span className="px-3 py-1 bg-blue-600/20 border border-blue-500/30 rounded-full text-blue-300 text-sm font-medium">
+                                {symbols[0]}
+                            </span>
+                        </div>
+                    )}
                 </div>
 
                 {/* AI Popup Buttons */}
-                {showAIOptions && (
+                {showAIOptions && financialdata && (
                     <div className="absolute right-8 top-48 grid grid-cols-3 gap-4 bg-black/90 border border-white/20 rounded-xl p-4 shadow-2xl z-50">
                         <button 
                             onClick={() => handleAPICall('fullanalysis', 'Full Analysis')}
-                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                            className="px-4 py-2 bg-white hover:bg-blue-700 text-black font-semibold rounded-lg transition-colors"
                         >
                             Full Analysis
                         </button>
                         <button
                             onClick={() => handleAPICall('business-explained', 'Business Explanation')}
-                            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                            className="px-4 py-2 bg-white hover:bg-green-700 text-black font-semibold rounded-lg transition-colors"
                         >
                             Business Explanation
                         </button>
                         <button
                             onClick={() => handleAPICall('competitors', 'Competitors')}
-                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                            className="px-4 py-2 bg-white hover:bg-red-700 text-black font-semibold rounded-lg transition-colors"
                         >
                             Competitors
                         </button>
                         <button
                             onClick={() => handleAPICall('financial-scorecard', 'Financial Scorecard')}
-                            className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors"
+                            className="px-4 py-2  bg-white hover:bg-yellow-700 text-black font-semibold rounded-lg transition-colors"
                         >
                             Financial Scorecard
                         </button>
                         <button
                             onClick={() => handleAPICall('future-prospects', 'Future Prospects')}
-                            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+                            className="px-4 py-2  bg-white hover:bg-purple-700 text-black font-semibold rounded-lg transition-colors"
                         >
                             Future Prospects
-                        </button>
-                        <button
-                            onClick={() => handleAPICall('business-explained', 'Stock Comparison')}
-                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
-                        >
-                            Stock Comparison
                         </button>
                     </div>
                 )}
@@ -421,11 +495,8 @@ export default function StockAnalysis() {
                             
                             {/* Content */}
                             <div className="flex-1 overflow-auto p-6">
-                                {isLoading ? (
-                                    <div className="flex items-center justify-center py-12">
-                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                                        <span className="ml-4 text-lg">Loading {popupTitle}...</span>
-                                    </div>
+                                {isLoadingAI ? (
+                                    <LoadingSpinner message={`Loading ${popupTitle}...`} />
                                 ) : popupData?.error ? (
                                     <div className="text-red-400 text-center py-8">
                                         <p className="text-xl">{popupData.error}</p>
@@ -448,28 +519,46 @@ export default function StockAnalysis() {
                     </div>
                 )}
 
-                {/* Financial Dashboard */}
-                <div className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg overflow-visible">
-                    <FinancialResearchDashboard stockData={financialdata} />
-                </div>
+                {/* Main Content - Only show if user has searched or is loading */}
+                {!hasSearched ? (
+                    <EmptyState />
+                ) : isLoadingStock ? (
+                    <div className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg">
+                        <LoadingSpinner message="Fetching stock data and financial information..." />
+                    </div>
+                ) : financialdata ? (
+                    <>
+                        {/* Financial Dashboard */}
+                        <div className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg overflow-visible">
+                            <FinancialResearchDashboard stockData={financialdata} />
+                        </div>
 
-                {/* Trading View Chart */}
-                <div className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg overflow-visible">
-                    <div className="p-4 border-b border-white/10">
-                        <h3 className="text-xl font-semibold text-white">Price Chart</h3>
-                    </div>
-                    <div className="w-full h-140">
-                        <TradingViewWidget symbol={symbols[0] ?? "HDFCBANK"} />
-                    </div>
-                </div>
+                        {/* Trading View Chart */}
+                        <div className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg overflow-visible">
+                            <div className="p-4 border-b border-white/10">
+                                <h3 className="text-xl font-semibold text-white">Price Chart</h3>
+                            </div>
+                            <div className="w-full h-140">
+                                <TradingViewWidget symbol={symbols[0] ?? "HDFCBANK"} />
+                            </div>
+                        </div>
 
-                {/* Financial Charts */}
-                <div className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg overflow-visible">
-                    <div className="p-4 border-b border-white/10">
-                        <h3 className="text-xl font-semibold text-white">Financial Analysis</h3>
+                        {/* Financial Charts */}
+                        <div className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg overflow-visible">
+                            <div className="p-4 border-b border-white/10">
+                                <h3 className="text-xl font-semibold text-white">Financial Analysis</h3>
+                            </div>
+                            <DynamicFinancialCharts data={financialArray} />
+                        </div>
+                    </>
+                ) : hasSearched ? (
+                    <div className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl shadow-lg">
+                        <div className="text-center py-12">
+                            <div className="text-red-400 text-xl mb-4">Failed to load stock data</div>
+                            <p className="text-gray-400">Please check the stock symbol and try again.</p>
+                        </div>
                     </div>
-                    <DynamicFinancialCharts data={financialArray} />
-                </div>
+                ) : null}
             </div>
         </div>
     )

@@ -274,11 +274,6 @@ const FinancialResearchDashboard = ({ stockData }:any) => {
             </div>
           )}
         </div>
-
-        {/* Footer */}
-        <div className="text-center mt-12 text-gray-400">
-          <p>Last Updated: {data.stockDetailsReusableData?.date || "22 Sep 2025"} at {data.stockDetailsReusableData?.time || "10:26:15"}</p>
-        </div>
       </div>
     </div>
   );
