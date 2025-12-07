@@ -7,8 +7,9 @@ export const FRONTEND_URL = `http://localhost:3000`;
 
 export const Header = () => {
   return (
-    <nav className="flex w-full items-center justify-between bg-black border-t border-b border-neutral-200 px-6 py-4 dark:border-neutral-800">
+    <nav className="flex w-full items-center justify-between bg-black border-t border-b border-neutral-200 px-6 py-4 dark:border-neutral-800 backdrop-blur-md">
       {/* Logo Section */}
+      <Link href={`${FRONTEND_URL}/`}>
       <div className="flex items-center gap-3">
         <Image 
           src={sitelogo} 
@@ -19,9 +20,10 @@ export const Header = () => {
         />
         <h1 className="text-lg font-bold md:text-2xl text-white">Vertex AI</h1>
       </div>
+      </Link>
 
       {/* Nav Links */}
-      <div className="flex gap-6">
+      <div className="flex gap-10">
         <Link href={`${FRONTEND_URL}/watchlist`} className="text-white hover:text-violet-400 transition">
           Watchlist
         </Link>

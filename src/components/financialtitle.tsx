@@ -94,8 +94,8 @@ const FinancialResearchDashboard = ({ stockData }:any) => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Financial Research Dashboard</h1>
-          <p className="text-gray-300">Real-time stock analysis and corporate insights</p>
+          <h1 className="text-4xl font-bold text-white mb-3">Financial Research Dashboard</h1>
+          <p className="text-gray-400 text-sm ">Real-time stock analysis and corporate insights</p>
         </div>
 
         {/* Main Stock Card */}

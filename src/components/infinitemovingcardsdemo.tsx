@@ -5,9 +5,9 @@ import { InfiniteMovingCards } from "@/components/ui/infinite-moving-cards";
 
 export function InfiniteMovingCardsDemo() {
   return (
-    <>
+    <div>
       
-      <div className="h-[40rem] rounded-md flex flex-col antialiased bg-white dark:bg-black dark:bg-grid-white/[0.05] items-center justify-center relative overflow-hidden">
+      <div className="h-[40rem] rounded-md flex flex-col antialiased bg-white dark:bg-black/10 dark:bg-grid-white/[0.05] items-center justify-center relative overflow-hidden">
       <h1 className="text-center text-3xl font-bold mb-10">
         Trusted by traders worldwide
       </h1>
@@ -21,7 +21,7 @@ export function InfiniteMovingCardsDemo() {
         />
       </div>
       
-    </>
+    </div>
   );
 }
 

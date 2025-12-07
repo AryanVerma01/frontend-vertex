@@ -47,18 +47,18 @@ function Watchlist() {
     <div className="p-6">
       <div className="dark-card p-6 mb-6">
         <h1 className="text-2xl font-bold text-white mb-4">Stock Watchlist</h1>
-        <div className="flex gap-3 mb-4">
+        <div className="flex gap-3 mb-4 border-1 border-white/30 rounded-lg py-3.5 px-3">
           <input
             type="text"
             placeholder="Enter Nifty 50 symbol (e.g., RELIANCE, TCS)"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
-            className="input-field flex-1"
+            className="input-field flex-1 focus:ring-0 focus:ring-offset-0 focus:outline-0"
           />
           <button
             onClick={handleAddSymbol}
-            className="primary-button"
+            className="primary-button bg-white text-black px-3.5 py-1.5 rounded-lg hover:bg-neutral-200 transition-all duration-200"
           >
             Add Symbol
           </button>
@@ -78,11 +78,11 @@ function Watchlist() {
                 className="w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center transition-colors"
                 title="Remove from watchlist"
               >
-                ×
+                X
               </button>
             </div>
-            <div className="h-96 border border-gray-800 rounded-lg overflow-hidden">
-              <TradingViewWidget symbol={symbol} />
+            <div className="h-96 border-1 border-neutral-700 rounded-lg overflow-hidden">
+              <TradingViewWidget symbol={symbol}/>
             </div>
           </div>
         ))}

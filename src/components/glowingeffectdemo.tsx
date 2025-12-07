@@ -6,15 +6,15 @@ import { MessageCircle, Brain, BarChart3, Zap, TrendingUp } from "lucide-react";
 
 export function GlowingEffectDemoSecond() {
   return (
-    <>
-      <h1 className="text-center text-3xl font-bold mb-10">
+    <div className="bg-black/10">
+      <h1 className="text-center text-4xl font-bold mb-4">
         Trading Reimagined by Vertex
       </h1>
-      <p className="text-center text-lg font-normal text-neutral-600 dark:text-neutral-400 mb-10">
+      <p className="text-center text-md font-normal text-neutral-600 dark:text-neutral-400 mb-10">
         Experience the future of trading with our revolutionary AI-powered platform.
       </p>
 
-      <ul className="grid grid-cols-1 grid-rows-none gap-4 md:grid-cols-12 md:grid-rows-3 lg:gap-4 xl:max-h-[34rem] xl:grid-rows-2 mx-40">
+      <ul className="grid grid-cols-1 grid-rows-none gap-4 md:grid-cols-12 md:grid-rows-3 lg:gap-4 xl:max-h-[34rem] xl:grid-rows-2 mx-40 py-4">
         <GridItem
           area="md:[grid-area:1/1/2/7] xl:[grid-area:1/1/2/5]"
           icon={<MessageCircle className="h-4 w-4 text-black dark:text-neutral-400" />}
@@ -49,7 +49,7 @@ export function GlowingEffectDemoSecond() {
           description="AI-driven portfolio optimization, risk assessment, and automated rebalancing to maximize your returns."
         />
       </ul>
-    </>
+    </div>
   );
 }
 

@@ -1,9 +1,11 @@
 import { Award, Globe, MessageCircle, TrendingUp, Users } from "lucide-react";
+import { FRONTEND_URL } from "./header";
+import Link from "next/link";
 
 export default function Halfsite(){
     return(
         <>
-    <section className="relative py-24 px-4 sm:px-6 lg:px-8 bg-black    ">
+    <section className="relative py-10 px-4 sm:px-6 lg:px-8 dark:bg-black/10     ">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-full px-6 py-2 mb-8">
             <Award className="w-4 h-4 text-blue-400" />
@@ -16,9 +18,11 @@ export default function Halfsite(){
             Join thousands of traders who are already using AI to make smarter investment decisions.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-8">
-            <button className="group px-10 py-5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-2xl text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25">
-              Start Free Trial
+          <Link href={`${FRONTEND_URL}/dashboard`}>
+            <button className="group text-black px-10 py-2 bg-gradient-to-r from-white to-blue-300 hover:from-blue-100 hover:to-blue-400 rounded-2xl text-lg font-semibold transition-all duration-300 hover:scale-102 hover:shadow-2xl hover:shadow-blue-500/25">
+                Start Free Trial
             </button>
+            </Link>
 
           </div>
           <p className="text-sm text-gray-500">
@@ -28,7 +32,7 @@ export default function Halfsite(){
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900/80 backdrop-blur-sm border-t border-slate-700/50 py-16 px-4 sm:px-6 lg:px-8">
+      <footer className="bg-black/80 backdrop-blur-sm border-t border-slate-700/50 py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8 mb-12">
             <div className="md:col-span-2">

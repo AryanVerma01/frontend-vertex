@@ -3,9 +3,11 @@ import { useState, useEffect, useRef } from 'react';
 import { Send, Bot, User, Loader2 } from 'lucide-react';
 import { Header } from "@/components/header"
 import axios from "axios";
+import { LoaderOne } from '@/components/ui/loader';
+import "dotenv/config"
 
-export const BACKEND_URL = 'http://localhost:8080';
-export const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiJkMjg2YTk2Yy00ZjU2LTRmYmMtYWEyMS1kN2RhZGNlYWZjYTAiLCJpYXQiOjE3NTg5MDg4MDl9.kdVBsywp8hs8as23SvDJWDFV-7010iAXW8EAaYHYrUE';
+export const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+export const token = process.env.NEXT_PUBLIC_TOKEN;
 
 export default function AIChat() {
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
@@ -62,7 +64,7 @@ export default function AIChat() {
       const response = await axios.get(`${BACKEND_URL}/chats?limit=10`, {
         headers: {
           'Content-Type': 'application/json',
-          'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiJkMjg2YTk2Yy00ZjU2LTRmYmMtYWEyMS1kN2RhZGNlYWZjYTAiLCJpYXQiOjE3NTgxMzY4MjJ9.69WNiS6khu6T4MxEusi508JNhb6dsuNUw780FqxUaGg'
+          'token': token
         }
       });
 
@@ -136,7 +138,7 @@ export default function AIChat() {
       }, {
         headers: {
           'Content-Type': 'application/json',
-          'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiJkMjg2YTk2Yy00ZjU2LTRmYmMtYWEyMS1kN2RhZGNlYWZjYTAiLCJpYXQiOjE3NTgxMzY4MjJ9.69WNiS6khu6T4MxEusi508JNhb6dsuNUw780FqxUaGg'
+          'token': token
         }
       });
 
@@ -318,8 +320,9 @@ export default function AIChat() {
         <Header />
         <div className="dark-card h-[600px] flex items-center justify-center m-6">
           <div className="text-center">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-4" />
-            <p className="text-gray-400">Loading chat history...</p>
+            <div className='mx-auto ml-10 mb-4'>
+              <LoaderOne/>
+            </div>
           </div>
         </div>
       </div>
@@ -327,7 +330,7 @@ export default function AIChat() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-black text-gray-100">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-black text-gray-100 text-sm">
       <div className="fixed top-0 left-0 right-0 z-50">
         <Header />
       </div>
@@ -353,10 +356,10 @@ export default function AIChat() {
                 return (
                   <div key={msg.id} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div className={`flex items-start space-x-3 max-w-[80%] ${msg.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                      <div className={`p-2 rounded-full ${msg.type === 'user' ? 'bg-blue-600' : 'bg-gray-700'}`}>
-                        {msg.type === 'user' ? <User className="h-4 w-4 text-white" /> : <Bot className="h-4 w-4 text-white" />}
+                      <div className={`p-2 rounded-full ${msg.type === 'user' ? 'bg-white' : 'bg-neutral-800'}`}>
+                        {msg.type === 'user' ? <User className="h-4 w-4 text-black" /> : <Bot className="h-4 w-4 text-white" />}
                       </div>
-                      <div className={`p-4 rounded-lg ${msg.type === 'user' ? 'bg-blue-600/60 text-white' : 'bg-gray-800/50 text-gray-100'} backdrop-blur-md shadow-md border border-white/10`}>
+                      <div className={`p-4 rounded-lg ${msg.type === 'user' ? 'bg-white/90 text-black' : 'bg-neutral-800/50 text-gray-100'} backdrop-blur-md shadow-md border border-white/10 text-sm`}>
                         {msg.action && msg.type === 'bot' && getActionBadge(msg.action)}
                         <p className="text-sm whitespace-pre-line">
                           {isLongAIResponse && !isExpanded 
@@ -412,10 +415,10 @@ export default function AIChat() {
 
         {/* Quick Actions above input (separate) */}
         <div className="px-6 pt-4">
-          <div className="mx-auto max-w-4xl bg-black text-white border border-white/10 rounded-xl px-4 py-4 shadow-lg">
+          <div className="mx-auto max-w-4xl bg-neutral-900 text-white border border-white/10 rounded-xl px-4 py-4 shadow-lg">
             <div className="flex flex-wrap items-center justify-center gap-3">
               <button
-                className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/20 hover:bg-white hover:text-black cursor-pointer"
+                className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/50 hover:bg-white hover:text-black cursor-pointer"
                 disabled={sending}
                 onClick={() => handleQuickAction('world news', 'Summarize today\'s top world market news in 10 concise bullet points with tickers if relevant.')}
               >
@@ -423,7 +426,7 @@ export default function AIChat() {
               </button>
 
               <button
-                className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/20 hover:bg-white hover:text-black cursor-pointer"
+                className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/50 hover:bg-white hover:text-black cursor-pointer"
                 disabled={sending}
                 onClick={() => handleQuickAction('megatrends', 'List 5 current mega trends impacting global markets, each with a brief explanation and 2-3 representative tickers.')}
               >
@@ -431,7 +434,7 @@ export default function AIChat() {
               </button>
 
               <button
-                className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/20 hover:bg-white hover:text-black cursor-pointer"
+                className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/50 hover:bg-white hover:text-black cursor-pointer"
                 disabled={sending}
                 onClick={() => handleQuickAction('best currencies', 'Which major FX pairs show the strongest momentum this week? Provide brief technical and macro context and 1 risk per idea')}
               >
@@ -441,7 +444,7 @@ export default function AIChat() {
               <div className="relative">
                 <button
                   type="button"
-                  className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/20 hover:bg-white hover:text-black cursor-pointer"
+                  className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/50 hover:bg-white hover:text-black cursor-pointer"
                   disabled={sending}
                   onClick={() => {
                     setShowCountryDropdown(v => !v)
@@ -451,11 +454,11 @@ export default function AIChat() {
                   Country Economic Cycle
                 </button>
                 {showCountryDropdown && (
-                  <div className="absolute mt-2 bg-gray-800 border border-gray-700 rounded-md p-2 z-20 max-h-64 overflow-y-auto w-64">
+                  <div className="absolute mt-2 bg-neutral-900 border border-neutral-700 rounded-md p-2 z-20 max-h-64 overflow-y-auto w-64">
                     {countries.map((c) => (
                       <button
                         key={c}
-                        className="block w-full text-left px-2 py-1 rounded hover:bg-gray-700 text-gray-100"
+                        className="block w-full text-left px-2 py-1 rounded hover:bg-neutral-700 text-gray-100"
                         onClick={async () => {
                           setSelectedCountry(c);
                           setShowCountryDropdown(false);
@@ -472,14 +475,14 @@ export default function AIChat() {
               {/* Updated Stock Comparison Section */}
               <div className="relative">
                 <button
-                  className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/20 hover:bg-white hover:text-black cursor-pointer"
+                  className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/50 hover:bg-white hover:text-black cursor-pointer"
                   disabled={sending}
                   onClick={() => setShowCompareForm(v => !v)}
                 >
                   Stock Comparison
                 </button>
                 {showCompareForm && (
-                  <div className="absolute mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-20 overflow-hidden" style={{ minWidth: '320px', maxWidth: '420px', width: 'max-content' }}>
+                  <div className="absolute mt-2 bg-neutral-900 border border-neutral-700 rounded-lg shadow-xl z-20 overflow-hidden" style={{ minWidth: '320px', maxWidth: '420px', width: 'max-content' }}>
                     <div className="p-4">
                       <div className="space-y-3">
                         <div className="flex flex-col sm:flex-row gap-3">
@@ -488,7 +491,7 @@ export default function AIChat() {
                               value={compareA}
                               onChange={(e) => setCompareA(e.target.value)}
                               placeholder="Ticker 1 (e.g., AAPL)"
-                              className="w-full px-3 py-2 bg-gray-900/80 border border-gray-600 rounded-md text-white text-sm placeholder-gray-400 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 focus:bg-gray-900 hover:border-gray-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                              className="w-full px-3 py-2 bg-neutral-900/80 border border-neutral-600 rounded-md text-white text-sm placeholder-gray-400 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-white focus:border-white focus:bg-gray-900 hover:border-gray-500 disabled:opacity-60 disabled:cursor-not-allowed"
                               disabled={sending}
                               maxLength={10}
                               style={{ boxSizing: 'border-box' }}
@@ -499,7 +502,7 @@ export default function AIChat() {
                               value={compareB}
                               onChange={(e) => setCompareB(e.target.value)}
                               placeholder="Ticker 2 (e.g., MSFT)"
-                              className="w-full px-3 py-2 bg-gray-900/80 border border-gray-600 rounded-md text-white text-sm placeholder-gray-400 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 focus:bg-gray-900 hover:border-gray-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                              className="w-full px-3 py-2 bg-neutral-900/80 border border-neutral-600 rounded-md text-white text-sm placeholder-gray-400 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-white focus:border-white focus:bg-gray-900 hover:border-gray-500 disabled:opacity-60 disabled:cursor-not-allowed"
                               disabled={sending}
                               maxLength={10}
                               style={{ boxSizing: 'border-box' }}
@@ -514,7 +517,7 @@ export default function AIChat() {
                             Cancel
                           </button>
                           <button
-                            className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                            className="px-3 py-1.5 text-sm bg-white text-black rounded-md hover:bg-white-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white-600 focus:outline-none focus:ring-1 focus:ring-white"
                             disabled={
                               sending || 
                               !compareA.trim() || 
@@ -533,7 +536,7 @@ export default function AIChat() {
               </div>
 
               <button
-                className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/20 hover:bg-white hover:text-black cursor-pointer"
+                className="rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-colors duration-200 bg-black text-white border border-white/50 hover:bg-white hover:text-black cursor-pointer"
                 disabled={sending}
                 onClick={() => handleQuickAction('upcoming listings', 'List upcoming IPO/stock listings over the next 2 weeks with exchange, expected size (if available), sector, and a one-line thesis.')}
               >
@@ -545,7 +548,7 @@ export default function AIChat() {
 
         {/* Input - sticks to bottom */}
         <div className="sticky bottom-0 z-10 px-6 pb-6">
-          <div className="mx-auto max-w-4xl bg-black/60 backdrop-blur-md border border-white/10 rounded-xl shadow-lg p-3">
+          <div className=" mt-10 mx-auto max-w-4xl bg-black/60 backdrop-blur-md border border-white/30 rounded-xl shadow-lg p-3">
             <div className="flex space-x-3">
               <input
                 type="text"
@@ -558,18 +561,18 @@ export default function AIChat() {
                   }
                 }}
                 placeholder="Ask about stocks, market trends, or trading strategies..."
-                className="input-field flex-1"
+                className="input-field flex-1 focus:ring-0 focus:ring-offset-0 focus:outline-none"
                 disabled={sending}
               />
               <button
                 onClick={handleSendMessage}
                 disabled={sending || !message.trim()}
-                className="primary-button disabled:opacity-50 disabled:cursor-not-allowed p-3"
+                className="primary-button disabled:opacity-40 disabled:cursor-not-allowed p-3 border-2 border-white/50 rounded-lg bg-white text-black"
               >
                 {sending ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
-                  <Send className="h-5 w-5" />
+                  <Send className="h-5 w-5 pt-0.5" />
                 )}
               </button>
             </div>

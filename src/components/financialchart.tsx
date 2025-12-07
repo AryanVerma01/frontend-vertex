@@ -154,7 +154,7 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
           }}
           className={`px-4 py-2 rounded-md text-sm font-medium flex items-center space-x-2 transition-colors ${
             selectedStatement === key
-              ? 'bg-blue-600 text-white shadow'
+              ? 'bg-white text-black shadow'
               : 'text-gray-200 hover:text-white hover:bg-gray-700/60'
           }`}
         >
@@ -173,7 +173,7 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
         <div className="flex space-x-2">
           <button
             onClick={() => setSelectedMetrics(getAvailableMetrics(selectedStatement).map(m => m.key))}
-            className="text-xs px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+            className="text-xs px-2 py-1 bg-white hover:bg-white text-black rounded transition-colors"
           >
             All
           </button>
@@ -198,7 +198,7 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
                   setSelectedMetrics(selectedMetrics.filter(m => m !== metric.key));
                 }
               }}
-              className="rounded border-gray-600 text-blue-500 focus:ring-blue-500 bg-gray-800"
+              className="rounded border-gray-600 text-white focus:ring-white-500 bg-gray-800"
             />
             <span className="text-sm text-gray-300 truncate">{metric.displayName}</span>
           </label>
@@ -219,7 +219,7 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
           onClick={() => setChartType(type)}
           className={`px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-1 ${
             chartType === type
-              ? 'bg-blue-600 text-white'
+              ? 'bg-white text-black'
               : 'bg-gray-800 text-gray-200 hover:bg-gray-700'
           }`}
         >
@@ -230,6 +230,12 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
     </div>
   );
 
+  const darkThemeColors = {
+    axis: '#E5E7EB',
+    grid: '#1E293B',
+    palette: ['#38BDF8', '#5EEAD4', '#FDE047', '#FB7185', '#C084FC', '#22D3EE', '#F9A8D4', '#A3E635', '#FDBA74', '#818CF8'],
+  };
+
   const renderChart = () => {
     if (!chartData.length || !selectedMetrics.length) {
     return (
@@ -239,8 +245,6 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
       );
     }
 
-    const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#EC4899', '#84CC16', '#F97316', '#6366F1'];
-
     const commonProps = {
       data: chartData,
       margin: { top: 20, right: 30, left: 20, bottom: 5 }
@@ -249,18 +253,18 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
     if (chartType === 'line') {
       return (
         <LineChart {...commonProps}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1F2937" />
-          <XAxis dataKey="year" stroke="#9CA3AF" fontSize={12} />
-          <YAxis stroke="#9CA3AF" fontSize={12} />
+          <CartesianGrid strokeDasharray="2 6" stroke={darkThemeColors.grid} />
+          <XAxis dataKey="year" stroke={darkThemeColors.axis} fontSize={12} />
+          <YAxis stroke={darkThemeColors.axis} fontSize={12} />
           <Tooltip content={<CustomTooltip />} />
           {selectedMetrics.map((metric, index) => (
             <Line
               key={metric}
               type="monotone"
               dataKey={metric}
-              stroke={colors[index % colors.length]}
+              stroke={darkThemeColors.palette[index % darkThemeColors.palette.length]}
               strokeWidth={2}
-              dot={{ fill: colors[index % colors.length], strokeWidth: 2, r: 4 }}
+              dot={{ fill: darkThemeColors.palette[index % darkThemeColors.palette.length], strokeWidth: 2, r: 4 }}
             />
           ))}
         </LineChart>
@@ -270,15 +274,15 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
     if (chartType === 'bar') {
       return (
         <BarChart {...commonProps}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1F2937" />
-          <XAxis dataKey="year" stroke="#9CA3AF" fontSize={12} />
-          <YAxis stroke="#9CA3AF" fontSize={12} />
+          <CartesianGrid strokeDasharray="2 6" stroke={darkThemeColors.grid} />
+          <XAxis dataKey="year" stroke={darkThemeColors.axis} fontSize={12} />
+          <YAxis stroke={darkThemeColors.axis} fontSize={12} />
           <Tooltip content={<CustomTooltip />} />
           {selectedMetrics.map((metric, index) => (
             <Bar
               key={metric}
               dataKey={metric}
-              fill={colors[index % colors.length]}
+              fill={darkThemeColors.palette[index % darkThemeColors.palette.length]}
               radius={[2, 2, 0, 0]}
             />
           ))}
@@ -289,9 +293,9 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
     if (chartType === 'area') {
       return (
         <AreaChart {...commonProps}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1F2937" />
-          <XAxis dataKey="year" stroke="#9CA3AF" fontSize={12} />
-          <YAxis stroke="#9CA3AF" fontSize={12} />
+          <CartesianGrid strokeDasharray="2 6" stroke={darkThemeColors.grid} />
+          <XAxis dataKey="year" stroke={darkThemeColors.axis} fontSize={12} />
+          <YAxis stroke={darkThemeColors.axis} fontSize={12} />
           <Tooltip content={<CustomTooltip />} />
           {selectedMetrics.map((metric, index) => (
             <Area
@@ -299,9 +303,9 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
               type="monotone"
               dataKey={metric}
               stackId="1"
-              stroke={colors[index % colors.length]}
-              fill={colors[index % colors.length]}
-              fillOpacity={0.3}
+              stroke={darkThemeColors.palette[index % darkThemeColors.palette.length]}
+              fill={darkThemeColors.palette[index % darkThemeColors.palette.length]}
+              fillOpacity={0.35}
             />
           ))}
         </AreaChart>
@@ -315,19 +319,6 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
     <div className="min-h-screen bg-gray-900 p-6 text-gray-100">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="bg-gray-800 rounded-xl shadow-sm border border-gray-700 p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-white">Financial Data Visualization</h1>
-              <p className="text-gray-300 mt-1">Interactive charts for comprehensive financial analysis</p>
-            </div>
-            {!data && (
-              <div className="text-sm bg-blue-900 text-blue-300 px-3 py-2 rounded-lg border border-blue-700">
-                Using sample data for demonstration
-              </div>
-            )}
-          </div>
-        </div>
 
         {/* Controls */}
         <div className="bg-gray-800 rounded-xl shadow-sm border border-gray-700 p-6">
@@ -377,12 +368,11 @@ const DynamicFinancialCharts: React.FC<DynamicFinancialChartsProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {selectedMetrics.map((metric, index) => {
                 const metricInfo = getAvailableMetrics(selectedStatement).find(m => m.key === metric);
-                const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#EC4899', '#84CC16', '#F97316', '#6366F1'];
                 return (
                   <div key={metric} className="flex items-center space-x-3">
                     <div 
                       className="w-4 h-4 rounded"
-                      style={{ backgroundColor: colors[index % colors.length] }}
+                      style={{ backgroundColor: darkThemeColors.palette[index % darkThemeColors.palette.length] }}
                     />
                     <span className="text-sm text-gray-200">{metricInfo?.displayName || metric}</span>
                   </div>

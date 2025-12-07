@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, RefreshCw, AlertCircle, BarChart3, Activity } from 'lucide-react';
 import axios from 'axios';
 import { Header } from '@/components/header';
+import 'dotenv/config'
 
 // TypeScript interfaces for API response
 interface StockData {
@@ -77,7 +78,7 @@ export default function MarketOverview() {
       setError(null);
       const response = await axios.get(`https://stock.indianapi.in/trending`,{
         headers:{
-          'X-API-KEY': "sk-live-lOeu1A68LnXNz3d0Tav3j3SWijdNn76933lH0o5l" 
+          'X-API-KEY': process.env.NEXT_PUBLIC_X_API_KEY
         }
       });
       
@@ -102,7 +103,7 @@ export default function MarketOverview() {
       setHighLowError(null);
       const response = await axios.get(`https://stock.indianapi.in/fetch_52_week_high_low_data`,{
         headers:{
-          'X-API-KEY': "sk-live-lOeu1A68LnXNz3d0Tav3j3SWijdNn76933lH0o5l" 
+          'X-API-KEY': process.env.NEXT_PUBLIC_X_API_KEY
         }
       });
       
@@ -194,7 +195,7 @@ export default function MarketOverview() {
               {loading && <RefreshCw className="h-4 w-4 text-blue-400 animate-spin" />}
               <button
                 onClick={refreshAllData}
-                className="text-gray-400 hover:text-blue-400 transition-colors p-2 rounded-lg hover:bg-gray-800"
+                className="text-gray-400 hover:text-blue-400 transition-colors p-2 rounded-lg hover:bg-neutral-800"
                 title="Refresh data"
               >
                 <RefreshCw className="h-4 w-4" />
@@ -215,7 +216,7 @@ export default function MarketOverview() {
               </div>
             ) : marketData?.top_gainers ? (
               marketData.top_gainers.slice(0, 5).map((stock) => (
-                <div key={stock.ticker_id} className="flex items-center justify-between p-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
+                <div key={stock.ticker_id} className="flex items-center justify-between p-3 rounded-lg bg-gray-900 hover:bg-gray-700 transition-colors">
                   <div className="flex-1">
                     <p className="text-white font-medium">{getTickerSymbol(stock.ric)}</p>
                     <p className="text-gray-400 text-sm truncate">{stock.company_name}</p>
@@ -245,7 +246,7 @@ export default function MarketOverview() {
               {loading && <RefreshCw className="h-4 w-4 text-blue-400 animate-spin" />}
               <button
                 onClick={refreshAllData}
-                className="text-gray-400 hover:text-blue-400 transition-colors p-2 rounded-lg hover:bg-gray-800"
+                className="text-gray-400 hover:text-blue-400 transition-colors p-2 rounded-lg hover:bg-gray-900"
                 title="Refresh data"
               >
                 <RefreshCw className="h-4 w-4" />
@@ -266,7 +267,7 @@ export default function MarketOverview() {
               </div>
             ) : marketData?.top_losers ? (
               marketData.top_losers.slice(0, 5).map((stock) => (
-                <div key={stock.ticker_id} className="flex items-center justify-between p-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
+                <div key={stock.ticker_id} className="flex items-center justify-between p-3 rounded-lg bg-gray-900 hover:bg-gray-700 transition-colors">
                   <div className="flex-1">
                     <p className="text-white font-medium">{getTickerSymbol(stock.ric)}</p>
                     <p className="text-gray-400 text-sm truncate">{stock.company_name}</p>
@@ -348,7 +349,7 @@ export default function MarketOverview() {
                 </div>
               ) : highLowData && highLowData[`${activeExchange}_52WeekHighLow`]?.high52Week ? (
                 highLowData[`${activeExchange}_52WeekHighLow`].high52Week.slice(0, 6).map((stock, index) => (
-                  <div key={`${stock.ticker}-${index}`} className="flex items-center justify-between p-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
+                  <div key={`${stock.ticker}-${index}`} className="flex items-center justify-between p-3 rounded-lg bg-gray-900 hover:bg-gray-700 transition-colors">
                     <div className="flex-1">
                       <p className="text-white font-medium">{stock.ticker.split('.')[0]}</p>
                       <p className="text-gray-400 text-sm truncate">{stock.company}</p>
@@ -392,7 +393,7 @@ export default function MarketOverview() {
                 </div>
               ) : highLowData && highLowData[`${activeExchange}_52WeekHighLow`]?.low52Week ? (
                 highLowData[`${activeExchange}_52WeekHighLow`].low52Week.slice(0, 6).map((stock, index) => (
-                  <div key={`${stock.ticker}-${index}`} className="flex items-center justify-between p-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
+                  <div key={`${stock.ticker}-${index}`} className="flex items-center justify-between p-3 rounded-lg bg-gray-900 hover:bg-gray-700 transition-colors">
                     <div className="flex-1">
                       <p className="text-white font-medium">{stock.ticker.split('.')[0]}</p>
                       <p className="text-gray-400 text-sm truncate">{stock.company}</p>
